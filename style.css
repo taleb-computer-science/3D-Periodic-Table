@@ -1,0 +1,54 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  color: white;
+  font-family: Arial, sans-serif;
+  cursor: grab;
+}
+
+body:active {
+  cursor: grabbing;
+}
+
+h1 {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  z-index: 10;
+  font-size: 13px;
+  text-decoration: underline;
+  text-align: center;
+}
+
+#scene {
+  width: 100vw;
+  height: 100vh;
+}
+
+.buttons {
+  position: absolute;
+  bottom: 25px;
+  width: 100%;
+  text-align: center;
+  z-index: 20;
+}
+
+button {
+  padding: 6px 10px;
+  margin: 3px;
+  color: #49ffff;
+  background: #001719;
+  border: 1px solid #17696d;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #063d40;
+  box-shadow: 0 0 15px #00ffff;
+}
