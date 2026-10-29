@@ -1,316 +1,85 @@
 
-const raw = `
-H|Hydrogen
-He|Helium
-Li|Lithium
-Be|Beryllium
-B|Boron
-C|Carbon
-N|Nitrogen
-O|Oxygen
-F|Fluorine
-Ne|Neon
-Na|Sodium
-Mg|Magnesium
-Al|Aluminium
-Si|Silicon
-P|Phosphorus
-S|Sulfur
-Cl|Chlorine
-Ar|Argon
-K|Potassium
-Ca|Calcium
-Sc|Scandium
-Ti|Titanium
-V|Vanadium
-Cr|Chromium
-Mn|Manganese
-Fe|Iron
-Co|Cobalt
-Ni|Nickel
-Cu|Copper
-Zn|Zinc
-Ga|Gallium
-Ge|Germanium
-As|Arsenic
-Se|Selenium
-Br|Bromine
-Kr|Krypton
-Rb|Rubidium
-Sr|Strontium
-Y|Yttrium
-Zr|Zirconium
-Nb|Niobium
-Mo|Molybdenum
-Tc|Technetium
-Ru|Ruthenium
-Rh|Rhodium
-Pd|Palladium
-Ag|Silver
-Cd|Cadmium
-In|Indium
-Sn|Tin
-Sb|Antimony
-Te|Tellurium
-I|Iodine
-Xe|Xenon
-Cs|Caesium
-Ba|Barium
-La|Lanthanum
-Ce|Cerium
-Pr|Praseodymium
-Nd|Neodymium
-Pm|Promethium
-Sm|Samarium
-Eu|Europium
-Gd|Gadolinium
-Tb|Terbium
-Dy|Dysprosium
-Ho|Holmium
-Er|Erbium
-Tm|Thulium
-Yb|Ytterbium
-Lu|Lutetium
-Hf|Hafnium
-Ta|Tantalum
-W|Tungsten
-Re|Rhenium
-Os|Osmium
-Ir|Iridium
-Pt|Platinum
-Au|Gold
-Hg|Mercury
-Tl|Thallium
-Pb|Lead
-Bi|Bismuth
-Po|Polonium
-At|Astatine
-Rn|Radon
-Fr|Francium
-Ra|Radium
-Ac|Actinium
-Th|Thorium
-Pa|Protactinium
-U|Uranium
-Np|Neptunium
-Pu|Plutonium
-Am|Americium
-Cm|Curium
-Bk|Berkelium
-Cf|Californium
-Es|Einsteinium
-Fm|Fermium
-Md|Mendelevium
-No|Nobelium
-Lr|Lawrencium
-Rf|Rutherfordium
-Db|Dubnium
-Sg|Seaborgium
-Bh|Bohrium
-Hs|Hassium
-Mt|Meitnerium
-Ds|Darmstadtium
-Rg|Roentgenium
-Cn|Copernicium
-Nh|Nihonium
-Fl|Flerovium
-Mc|Moscovium
-Lv|Livermorium
-Ts|Tennessine
-Og|Oganesson
-`.trim().split("\n").map(line => {
-  const [symbol, name] = line.split("|");
-  return { symbol, name };
-});
-
-const positions = {};
-
-const rows = [
-  ["H","","","","","","","","","","","","","","","","","He"],
-  ["Li","Be","","","","","","","","","","","B","C","N","O","F","Ne"],
-  ["Na","Mg","","","","","","","","","","","Al","Si","P","S","Cl","Ar"],
-  ["K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr"],
-  ["Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe"],
-  ["Cs","Ba","La","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn"],
-  ["Fr","Ra","Ac","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"]
+const elements = [
+  [1,"H","Hydrogen",1,1],[2,"He","Helium",18,1],
+  [3,"Li","Lithium",1,2],[4,"Be","Beryllium",2,2],
+  [5,"B","Boron",13,2],[6,"C","Carbon",14,2],
+  [7,"N","Nitrogen",15,2],[8,"O","Oxygen",16,2],
+  [9,"F","Fluorine",17,2],[10,"Ne","Neon",18,2],
+  [11,"Na","Sodium",1,3],[12,"Mg","Magnesium",2,3],
+  [13,"Al","Aluminium",13,3],[14,"Si","Silicon",14,3],
+  [15,"P","Phosphorus",15,3],[16,"S","Sulfur",16,3],
+  [17,"Cl","Chlorine",17,3],[18,"Ar","Argon",18,3],
+  [19,"K","Potassium",1,4],[20,"Ca","Calcium",2,4],
+  [21,"Sc","Scandium",3,4],[22,"Ti","Titanium",4,4],
+  [23,"V","Vanadium",5,4],[24,"Cr","Chromium",6,4],
+  [25,"Mn","Manganese",7,4],[26,"Fe","Iron",8,4],
+  [27,"Co","Cobalt",9,4],[28,"Ni","Nickel",10,4],
+  [29,"Cu","Copper",11,4],[30,"Zn","Zinc",12,4],
+  [31,"Ga","Gallium",13,4],[32,"Ge","Germanium",14,4],
+  [33,"As","Arsenic",15,4],[34,"Se","Selenium",16,4],
+  [35,"Br","Bromine",17,4],[36,"Kr","Krypton",18,4],
+  [37,"Rb","Rubidium",1,5],[38,"Sr","Strontium",2,5],
+  [39,"Y","Yttrium",3,5],[40,"Zr","Zirconium",4,5],
+  [41,"Nb","Niobium",5,5],[42,"Mo","Molybdenum",6,5],
+  [43,"Tc","Technetium",7,5],[44,"Ru","Ruthenium",8,5],
+  [45,"Rh","Rhodium",9,5],[46,"Pd","Palladium",10,5],
+  [47,"Ag","Silver",11,5],[48,"Cd","Cadmium",12,5],
+  [49,"In","Indium",13,5],[50,"Sn","Tin",14,5],
+  [51,"Sb","Antimony",15,5],[52,"Te","Tellurium",16,5],
+  [53,"I","Iodine",17,5],[54,"Xe","Xenon",18,5],
+  [55,"Cs","Cesium",1,6],[56,"Ba","Barium",2,6],
+  [72,"Hf","Hafnium",4,6],[73,"Ta","Tantalum",5,6],
+  [74,"W","Tungsten",6,6],[75,"Re","Rhenium",7,6],
+  [76,"Os","Osmium",8,6],[77,"Ir","Iridium",9,6],
+  [78,"Pt","Platinum",10,6],[79,"Au","Gold",11,6],
+  [80,"Hg","Mercury",12,6],[81,"Tl","Thallium",13,6],
+  [82,"Pb","Lead",14,6],[83,"Bi","Bismuth",15,6],
+  [84,"Po","Polonium",16,6],[85,"At","Astatine",17,6],
+  [86,"Rn","Radon",18,6],[87,"Fr","Francium",1,7],
+  [88,"Ra","Radium",2,7],[104,"Rf","Rutherfordium",4,7],
+  [105,"Db","Dubnium",5,7],[106,"Sg","Seaborgium",6,7],
+  [107,"Bh","Bohrium",7,7],[108,"Hs","Hassium",8,7],
+  [109,"Mt","Meitnerium",9,7],[110,"Ds","Darmstadtium",10,7],
+  [111,"Rg","Roentgenium",11,7],[112,"Cn","Copernicium",12,7],
+  [113,"Nh","Nihonium",13,7],[114,"Fl","Flerovium",14,7],
+  [115,"Mc","Moscovium",15,7],[116,"Lv","Livermorium",16,7],
+  [117,"Ts","Tennessine",17,7],[118,"Og","Oganesson",18,7]
 ];
 
-// Main table positions
-rows.forEach((row, r) => {
-  row.forEach((symbol, c) => {
-    if (symbol) {
-      positions[symbol] = [r + 1, c + 1];
-    }
+const table = document.getElementById("table");
+const search = document.getElementById("search");
+const details = document.getElementById("details");
+
+function showElements(filter = "") {
+  table.innerHTML = "";
+
+  elements.forEach(([number, symbol, name, col, row]) => {
+    if (!`${symbol} ${name} ${number}`.toLowerCase()
+      .includes(filter.toLowerCase())) return;
+
+    const card = document.createElement("div");
+    card.className = "element";
+    card.style.gridColumn = col;
+    card.style.gridRow = row;
+
+    card.innerHTML = `
+      <span class="number">${number}</span>
+      <span class="symbol">${symbol}</span>
+      <span class="name">${name}</span>
+    `;
+
+    card.addEventListener("click", () => {
+      details.innerHTML = `
+        <h2>${name} (${symbol})</h2>
+        <p>Atomic Number: ${number}</p>
+        <p>Periodic Table Position: Group ${col}, Period ${row}</p>
+      `;
+    });
+
+    table.appendChild(card);
   });
-});
-
-// Lanthanides
-"Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu"
-  .split(" ")
-  .forEach((symbol, i) => {
-    positions[symbol] = [9, i + 4];
-  });
-
-// Actinides
-"Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr"
-  .split(" ")
-  .forEach((symbol, i) => {
-    positions[symbol] = [10, i + 4];
-  });
-
-// Element category colors
-function category(n) {
-  if ([3,11,19,37,55,87].includes(n)) return "alkali";
-  if ([4,12,20,38,56,88].includes(n)) return "alkaline";
-  if ([2,10,18,36,54,86,118].includes(n)) return "noble";
-  if ([9,17,35,53,85,117].includes(n)) return "halogen";
-
-  if ([5,14,32,33,51,52].includes(n)) return "metalloid";
-
-  if ([1,6,7,8,15,16,34].includes(n)) return "nonmetal";
-
-  if ([13,31,49,50,81,82,83,84,113,114,115,116].includes(n))
-    return "post";
-
-  if (n >= 57 && n <= 71) return "lanthanide";
-  if (n >= 89 && n <= 103) return "actinide";
-
-  return "transition";
 }
 
-const table = document.getElementById("table");
-const details = document.getElementById("details");
-const search = document.getElementById("search");
-const wrapper = document.getElementById("wrapper");
+search.addEventListener("input", () => showElements(search.value));
 
-// Create element cubes
-raw.forEach((el, i) => {
-  const atomicNumber = i + 1;
-  const pos = positions[el.symbol];
-
-  if (!pos) return;
-
-  const tile = document.createElement("button");
-
-  tile.className = "element " + category(atomicNumber);
-  tile.style.gridRow = pos[0];
-  tile.style.gridColumn = pos[1];
-
-  tile.dataset.search =
-    `${el.name} ${el.symbol} ${atomicNumber}`.toLowerCase();
-
-  tile.innerHTML = `
-    <span class="num">${atomicNumber}</span>
-    <span class="sym">${el.symbol}</span>
-  `;
-
-  tile.addEventListener("click", () => {
-    details.innerHTML = `
-      <strong>${el.name} (${el.symbol})</strong><br>
-      Atomic Number: ${atomicNumber}<br>
-      Category: ${category(atomicNumber)}
-    `;
-  });
-
-  table.appendChild(tile);
-});
-
-// Search by name, symbol or atomic number
-search.addEventListener("input", () => {
-  const query = search.value.toLowerCase().trim();
-
-  document.querySelectorAll(".element").forEach(tile => {
-    const match = tile.dataset.search.includes(query);
-
-    tile.style.opacity = match ? "1" : "0.12";
-    tile.style.filter = match ? "" : "grayscale(1)";
-  });
-});
-
-// Switch between 3D and flat views
-let flat = false;
-
-document.getElementById("view").addEventListener("click", () => {
-  flat = !flat;
-
-  table.style.transform = flat
-    ? "none"
-    : `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
-  document.getElementById("view").textContent =
-    flat ? "3D View" : "Flat View";
-});
-
-// Reset everything
-document.getElementById("reset").addEventListener("click", () => {
-  search.value = "";
-  flat = false;
-  rotateX = 12;
-  rotateY = -4;
-  zoom = 1;
-
-  table.style.transform = "";
-  table.style.scale = "1";
-
-  document.querySelectorAll(".element").forEach(tile => {
-    tile.style.opacity = "1";
-    tile.style.filter = "";
-  });
-
-  document.getElementById("view").textContent = "Flat View";
-  details.textContent = "Select an element to see its details.";
-});
-
-// Mouse and touch drag to rotate
-let dragging = false;
-let startX = 0;
-let startY = 0;
-let rotateX = 12;
-let rotateY = -4;
-
-wrapper.addEventListener("pointerdown", e => {
-  if (e.target.closest(".element")) return;
-
-  dragging = true;
-  startX = e.clientX;
-  startY = e.clientY;
-
-  wrapper.setPointerCapture(e.pointerId);
-});
-
-wrapper.addEventListener("pointermove", e => {
-  if (!dragging || flat) return;
-
-  rotateY += (e.clientX - startX) * 0.4;
-  rotateX -= (e.clientY - startY) * 0.3;
-
-  rotateX = Math.max(-25, Math.min(35, rotateX));
-
-  table.style.transform =
-    `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
-  startX = e.clientX;
-  startY = e.clientY;
-});
-
-wrapper.addEventListener("pointerup", () => {
-  dragging = false;
-});
-
-wrapper.addEventListener("pointercancel", () => {
-  dragging = false;
-});
-
-// Zoom using the mouse wheel
-let zoom = 1;
-
-wrapper.addEventListener("wheel", e => {
-  e.preventDefault();
-
-  zoom = Math.max(
-    0.6,
-    Math.min(1.5, zoom - e.deltaY * 0.0005)
-  );
-
-  table.style.scale = zoom;
-}, { passive: false });
+showElements();
