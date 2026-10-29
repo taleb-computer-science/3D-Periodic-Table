@@ -10,26 +10,15 @@
 <body>
 
   <h1>3D Periodic Table</h1>
-  <p>Explore all 118 chemical elements</p>
+  <p>Explore the elements of the universe</p>
 
-  <div class="controls">
-    <input id="search" type="text"
-      placeholder="Search name, symbol or number...">
-    <button id="view">Flat View</button>
-    <button id="reset">Reset</button>
+  <input id="search" type="text" placeholder="Search elements...">
+
+  <div class="scene">
+    <div class="table" id="table"></div>
   </div>
 
-  <div class="wrapper" id="wrapper">
-    <div id="table"></div>
-  </div>
-
-  <p class="help">
-    Drag empty space to rotate · Scroll to zoom · Tap an element for details
-  </p>
-
-  <div id="details">
-    Select an element to see its details.
-  </div>
+  <div id="details">Click an element to see its details.</div>
 
   <script src="script.js"></script>
 </body>
