@@ -1,394 +1,195 @@
-const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-  60,
-  innerWidth / innerHeight,
-  0.1,
-  1000
-);
+const symbols = `
+H He Li Be B C N O F Ne
+Na Mg Al Si P S Cl Ar
+K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr
+Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe
+Cs Ba La Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn
+Fr Ra Ac Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og
+`.trim().split(/\s+/);
 
-camera.position.z = 7;
+const names = `
+Hydrogen Helium Lithium Beryllium Boron Carbon Nitrogen Oxygen Fluorine Neon
+Sodium Magnesium Aluminium Silicon Phosphorus Sulfur Chlorine Argon
+Potassium Calcium Scandium Titanium Vanadium Chromium Manganese Iron Cobalt Nickel Copper Zinc Gallium Germanium Arsenic Selenium Bromine Krypton
+Rubidium Strontium Yttrium Zirconium Niobium Molybdenum Technetium Ruthenium Rhodium Palladium Silver Cadmium Indium Tin Antimony Tellurium Iodine Xenon
+Caesium Barium Lanthanum Hafnium Tantalum Tungsten Rhenium Osmium Iridium Platinum Gold Mercury Thallium Lead Bismuth Polonium Astatine Radon
+Francium Radium Actinium Rutherfordium Dubnium Seaborgium Bohrium Hassium Meitnerium Darmstadtium Roentgenium Copernicium Nihonium Flerovium Moscovium Livermorium Tennessine Oganesson
+`.trim().split(/\s+/);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true
-});
+// Add the two inner rows.
+const extraSymbols = `
+Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu
+Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr
+`.trim().split(/\s+/);
 
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
+const extraNames = `
+Cerium Praseodymium Neodymium Promethium Samarium Europium Gadolinium Terbium Dysprosium Holmium Erbium Thulium Ytterbium Lutetium
+Thorium Protactinium Uranium Neptunium Plutonium Americium Curium Berkelium Californium Einsteinium Fermium Mendelevium Nobelium Lawrencium
+`.trim().split(/\s+/);
 
-document.getElementById("scene").appendChild(renderer.domElement);
+const allSymbols = [...symbols, ...extraSymbols];
+const allNames = [...names, ...extraNames];
 
+// Category colors
+function category(n, s) {
+  if ([2,10,18,36,54,86,118].includes(n)) return "noble";
+  if ([9,17,35,53,85,117].includes(n)) return "halogen";
+  if ([3,11,19,37,55,87].includes(n)) return "alkali";
+  if ([4,12,20,38,56,88].includes(n)) return "alkaline";
+  if (n >= 57 && n <= 71 || n >= 89 && n <= 103)
+    return n < 89 ? "lanthanide" : "actinide";
+  if ([5,14,32,33,51,52].includes(n)) return "metalloid";
+  if ([1,6,7,8,15,16,34].includes(n)) return "nonmetal";
+  if ([13,31,49,50,81,82,83,84,113,114,115,116].includes(n))
+    return "post";
+  return "transition";
+}
 
-// ================= ELEMENTS =================
+const table = document.getElementById("periodicTable");
+const search = document.getElementById("search");
+const details = document.getElementById("details");
+const wrapper = document.querySelector(".table-wrapper");
 
-const elements = [
-"H","He",
-"Li","Be","B","C","N","O","F","Ne",
-"Na","Mg","Al","Si","P","S","Cl","Ar",
-"K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr",
-"Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe",
-"Cs","Ba","La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu",
-"Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn",
-"Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr",
-"Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"
+const positions = new Map();
+
+function place(symbol, row, col) {
+  positions.set(symbol, [row, col]);
+}
+
+// Main periodic table layout
+const rows = [
+  ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
+  ["Li","Be","","","","","","","","","","","B","C","N","O","F","Ne"],
+  ["Na","Mg","","","","","","","","","","","Al","Si","P","S","Cl","Ar"],
+  ["K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr"],
+  ["Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe"],
+  ["Cs","Ba","La","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn"],
+  ["Fr","Ra","Ac","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"]
 ];
 
-
-// ================= PERIODIC TABLE POSITIONS =================
-
-const positions = {
-
-H:[1,1], He:[18,1],
-
-Li:[1,2], Be:[2,2],
-B:[13,2], C:[14,2], N:[15,2], O:[16,2], F:[17,2], Ne:[18,2],
-
-Na:[1,3], Mg:[2,3],
-Al:[13,3], Si:[14,3], P:[15,3], S:[16,3], Cl:[17,3], Ar:[18,3],
-
-K:[1,4], Ca:[2,4], Sc:[3,4], Ti:[4,4], V:[5,4],
-Cr:[6,4], Mn:[7,4], Fe:[8,4], Co:[9,4], Ni:[10,4],
-Cu:[11,4], Zn:[12,4], Ga:[13,4], Ge:[14,4], As:[15,4],
-Se:[16,4], Br:[17,4], Kr:[18,4],
-
-Rb:[1,5], Sr:[2,5], Y:[3,5], Zr:[4,5], Nb:[5,5],
-Mo:[6,5], Tc:[7,5], Ru:[8,5], Rh:[9,5], Pd:[10,5],
-Ag:[11,5], Cd:[12,5], In:[13,5], Sn:[14,5], Sb:[15,5],
-Te:[16,5], I:[17,5], Xe:[18,5],
-
-Cs:[1,6], Ba:[2,6], La:[3,6], Hf:[4,6], Ta:[5,6],
-W:[6,6], Re:[7,6], Os:[8,6], Ir:[9,6], Pt:[10,6],
-Au:[11,6], Hg:[12,6], Tl:[13,6], Pb:[14,6], Bi:[15,6],
-Po:[16,6], At:[17,6], Rn:[18,6],
-
-Fr:[1,7], Ra:[2,7], Ac:[3,7], Rf:[4,7], Db:[5,7],
-Sg:[6,7], Bh:[7,7], Hs:[8,7], Mt:[9,7], Ds:[10,7],
-Rg:[11,7], Cn:[12,7], Nh:[13,7], Fl:[14,7], Mc:[15,7],
-Lv:[16,7], Ts:[17,7], Og:[18,7]
-};
-
-
-// ================= CREATE ELEMENT =================
-
-const globe = new THREE.Group();
-
-scene.add(globe);
-
-const cards = [];
-
-function createCard(symbol) {
-
-  const canvas = document.createElement("canvas");
-
-  canvas.width = 128;
-  canvas.height = 128;
-
-  const ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = "#00272a";
-  ctx.fillRect(5,5,118,118);
-
-  ctx.strokeStyle = "#00ffff";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(5,5,118,118);
-
-  ctx.fillStyle = "#8fffff";
-  ctx.font = "bold 42px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  ctx.shadowColor = "#00ffff";
-  ctx.shadowBlur = 12;
-
-  ctx.fillText(symbol,64,64);
-
-  const texture = new THREE.CanvasTexture(canvas);
-
-  const material = new THREE.MeshBasicMaterial({
-    map:texture,
-    transparent:true,
-    side:THREE.DoubleSide
+rows.forEach((row, r) => {
+  row.forEach((symbol, c) => {
+    if (symbol) place(symbol, r + 1, c + 1);
   });
-
-  const geometry = new THREE.PlaneGeometry(.38,.38);
-
-  return new THREE.Mesh(geometry,material);
-}
-
-
-// ================= CREATE ALL ELEMENTS =================
-
-elements.forEach((symbol,i)=>{
-
-  const card = createCard(symbol);
-
-  card.userData.symbol = symbol;
-
-  globe.add(card);
-
-  cards.push(card);
-
 });
 
+// Separate lanthanide and actinide rows
+extraSymbols.slice(0, 15).forEach((s, i) => place(s, 9, i + 4));
+extraSymbols.slice(15).forEach((s, i) => place(s, 10, i + 4));
 
-// ================= SPHERE POSITION =================
+// Build all 118 element tiles
+allSymbols.forEach((symbol, index) => {
+  const atomicNumber = index + 1;
+  const name = allNames[index];
+  const elCategory = category(atomicNumber, symbol);
+  const pos = positions.get(symbol);
 
-function spherePosition(i) {
+  if (!pos) return;
 
-  const radius = 2.4;
+  const tile = document.createElement("button");
+  tile.className = `element ${elCategory}`;
+  tile.style.gridRow = pos[0];
+  tile.style.gridColumn = pos[1];
+  tile.dataset.name = name.toLowerCase();
+  tile.dataset.symbol = symbol.toLowerCase();
+  tile.dataset.number = atomicNumber;
 
-  const phi =
-    Math.acos(-1 + (2 * i) / elements.length);
+  tile.innerHTML = `
+    <span class="number">${atomicNumber}</span>
+    <span class="symbol">${symbol}</span>
+  `;
 
-  const theta =
-    Math.sqrt(elements.length * Math.PI) * phi;
-
-  return new THREE.Vector3(
-    radius * Math.cos(theta) * Math.sin(phi),
-    radius * Math.sin(theta) * Math.sin(phi),
-    radius * Math.cos(phi)
-  );
-}
-
-
-// ================= TABLE POSITION =================
-
-function tablePosition(symbol) {
-
-  const p = positions[symbol];
-
-  if (!p) return new THREE.Vector3();
-
-  const x = (p[0] - 9.5) * .43;
-  const y = (4 - p[1]) * .43;
-
-  return new THREE.Vector3(x,y,0);
-}
-
-
-// ================= SQUARE POSITION =================
-
-function squarePosition(i) {
-
-  const columns = 12;
-
-  const x =
-    (i % columns - 5.5) * .52;
-
-  const y =
-    (Math.floor(i / columns) - 4.5) * .52;
-
-  return new THREE.Vector3(x,y,0);
-}
-
-
-// ================= CHANGE MODE =================
-
-let currentMode = "sphere";
-
-function setMode(mode) {
-
-  currentMode = mode;
-
-  cards.forEach((card,i)=>{
-
-    let target;
-
-    if(mode === "sphere")
-      target = spherePosition(i);
-
-    if(mode === "table")
-      target = tablePosition(card.userData.symbol);
-
-    if(mode === "square")
-      target = squarePosition(i);
-
-    card.userData.target = target;
-
+  tile.addEventListener("click", () => {
+    details.innerHTML = `
+      <strong>${name} (${symbol})</strong><br>
+      Atomic Number: ${atomicNumber}<br>
+      Category: ${elCategory}
+    `;
   });
 
-}
-
-
-// Start sphere
-
-setMode("sphere");
-
-
-// ================= MOUSE MOVEMENT =================
-
-let mouseX = 0;
-let mouseY = 0;
-
-document.addEventListener("mousemove",e=>{
-
-  mouseX =
-    (e.clientX / innerWidth - .5) * 2;
-
-  mouseY =
-    (e.clientY / innerHeight - .5) * 2;
-
+  table.appendChild(tile);
 });
 
+// Search by name, symbol, or atomic number
+search.addEventListener("input", () => {
+  const query = search.value.toLowerCase().trim();
 
-// ================= DRAG ROTATION =================
+  document.querySelectorAll(".element").forEach(tile => {
+    const matches =
+      tile.dataset.name.includes(query) ||
+      tile.dataset.symbol.includes(query) ||
+      tile.dataset.number === query;
 
+    tile.style.opacity = matches ? "1" : "0.12";
+    tile.style.filter = matches ? "" : "grayscale(1)";
+  });
+});
+
+// Switch between 3D and flat views
+document.getElementById("viewBtn").addEventListener("click", () => {
+  table.classList.toggle("flat");
+
+  document.getElementById("viewBtn").textContent =
+    table.classList.contains("flat") ? "3D View" : "Flat View";
+});
+
+// Reset view
+document.getElementById("resetBtn").addEventListener("click", () => {
+  table.style.transform = "";
+  table.classList.remove("flat");
+  search.value = "";
+
+  document.querySelectorAll(".element").forEach(tile => {
+    tile.style.opacity = "1";
+    tile.style.filter = "";
+  });
+
+  document.getElementById("viewBtn").textContent = "Flat View";
+});
+
+// Mouse and touch drag to rotate the table
 let dragging = false;
-let oldX = 0;
-let oldY = 0;
+let startX = 0;
+let startY = 0;
+let rotateX = 12;
+let rotateY = -4;
 
-renderer.domElement.addEventListener(
-  "mousedown",
-  e=>{
+wrapper.addEventListener("pointerdown", e => {
+  if (e.target.closest(".element")) return;
 
-    dragging = true;
+  dragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  wrapper.setPointerCapture(e.pointerId);
+});
 
-    oldX = e.clientX;
-    oldY = e.clientY;
+wrapper.addEventListener("pointermove", e => {
+  if (!dragging) return;
 
-  }
-);
+  rotateY += (e.clientX - startX) * 0.4;
+  rotateX -= (e.clientY - startY) * 0.3;
 
-document.addEventListener(
-  "mouseup",
-  ()=>{
+  rotateX = Math.max(-25, Math.min(35, rotateX));
 
-    dragging = false;
+  table.style.transform =
+    `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 
-  }
-);
+  startX = e.clientX;
+  startY = e.clientY;
+});
 
-document.addEventListener(
-  "mousemove",
-  e=>{
+wrapper.addEventListener("pointerup", () => dragging = false);
+wrapper.addEventListener("pointercancel", () => dragging = false);
 
-    if(!dragging) return;
+// Wheel zoom
+let zoom = 1;
 
-    globe.rotation.y +=
-      (e.clientX-oldX)*.006;
+wrapper.addEventListener("wheel", e => {
+  e.preventDefault();
 
-    globe.rotation.x +=
-      (e.clientY-oldY)*.006;
+  zoom -= e.deltaY * 0.0005;
+  zoom = Math.max(0.55, Math.min(1.6, zoom));
 
-    oldX = e.clientX;
-    oldY = e.clientY;
-
-  }
-);
-
-
-// ================= ZOOM =================
-
-document.addEventListener(
-  "wheel",
-  e=>{
-
-    camera.position.z +=
-      e.deltaY * .002;
-
-    camera.position.z =
-      Math.max(
-        4,
-        Math.min(12,camera.position.z)
-      );
-
-  }
-);
-
-
-// ================= RESET =================
-
-function resetView(){
-
-  camera.position.z = 7;
-
-  globe.rotation.x = 0;
-  globe.rotation.y = 0;
-
-  setMode("sphere");
-
-}
-
-
-// ================= ANIMATION =================
-
-function animate(){
-
-  requestAnimationFrame(animate);
-
-  cards.forEach(card=>{
-
-    if(!card.userData.target) return;
-
-    card.position.lerp(
-      card.userData.target,
-      .08
-    );
-
-    // Face the camera
-    if(currentMode !== "sphere"){
-      card.rotation.x = 0;
-      card.rotation.y = 0;
-      card.rotation.z = 0;
-    }
-    else {
-
-      card.lookAt(
-        card.position.clone().multiplyScalar(2)
-      );
-
-    }
-
-  });
-
-
-  // Cursor-controlled movement
-
-  if(!dragging){
-
-    globe.rotation.y +=
-      (mouseX * .25 - globe.rotation.y) * .01;
-
-    globe.rotation.x +=
-      (mouseY * .15 - globe.rotation.x) * .01;
-
-  }
-
-
-  // Slow sphere rotation
-
-  if(currentMode === "sphere" && !dragging){
-
-    globe.rotation.y += .002;
-
-  }
-
-
-  renderer.render(
-    scene,
-    camera
-  );
-
-}
-
-animate();
-
-
-// ================= RESIZE =================
-
-window.addEventListener(
-  "resize",
-  ()=>{
-
-    camera.aspect =
-      innerWidth / innerHeight;
-
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(
-      innerWidth,
-      innerHeight
-    );
-
-  }
-);
+  table.style.scale = zoom;
+}, { passive: false });
